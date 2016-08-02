@@ -9,26 +9,26 @@
 from __future__ import print_function #Python 2.7 compatibility
 from srwlib import *
 from numpy import loadtxt
-
+import math
 #****************************************************************************
 #****************************************************************************
 # Setup some transmission-type optical elements
 #****************************************************************************
 #****************************************************************************
-def srwl_opt_setup_mask(_delta, _atten_len, _thick, _hole_sh, _hole_dim1, _hole_dim2, _pitch_x, _pitch_y, _hole_nx, _hole_ny, _mask_Nx, _mask_Ny, _hole_tilt=0):
+def srwl_opt_setup_mask(_delta, _atten_len, _thick, _hole_sh, _hole_dim1, _hole_dim2, _pitch_x, _pitch_y, _hole_nx, _hole_ny, _mask_Nx, _mask_Ny, _hole_tilt=0,_angle=0):
     """
     Setup Transmission type Optical Element which simulates a Pinhole Mask Array (PMA) for at-wavelength metrology
     :param _delta: refractive index decrement (can be one number of array vs photon energy)
     :param _atten_len: attenuation length [m] (can be one number of array vs photon energy)
     :param _thick: thickness of mask [m]
-    :param _hole_sh: hole shape. 1: Circular Holes case. 2: Rectangular Holes case.
+    :param _hole_sh: hole shape. 1: Circular Holes case. 2: Rectangular Holes case. 3:square
     :param _hole_dim1: hole dimension 1, radius for circular holes or width for rectangular holes.
     :param _hole_dim2: hole dimension 2, height for rectangular holes
     :param _pitch_x: mask pitch in x-direction [m]
     :param _pitch_y: mask pitch in y-direction [m]
     :param _hole_nx: number of holes in x-direction
     :param _hole_ny: number of holes in y-direction
-    :param _mask_Nx: number of pixels in x-direction
+    :param _mask_Nx: number of pixels in x-direction  #?
     :param _mask_Ny: number of pixels in y-direction
     :param _hole_tilt: tilt angle of the mask(or the hole(?)) [rad or degree(?)]
     :return: transmission (SRWLOptT) type optical element which simulates the PMA
@@ -71,41 +71,86 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick, _hole_sh, _hole_dim1, _hole_
         # NOTE!!! Use round to solve the precision issue!
         nyPitchesBefore = floor(round((y - yStartHole)/_pitch_y,9)) 
         yRel = y - (yStartHole + nyPitchesBefore*_pitch_y)
-        
+        if(_hole_sh==1):
         # Make a rough judgement (J1) if this row is inside the hole according to yRel.
         #insideHoleY = True
         # NOTE!!! Use round to solve the precision issue!
         #if (round(yRel-_hole_dim2,9) >= 0): insideHoleY = False
-
-        x = -0.5*MaskRx # Mask is always centered on the grid, however grid can be shifted.
-        for ix in range(_mask_Nx):
+            x = -0.5*MaskRx # Mask is always centered on the grid, however grid can be shifted.
+            for ix in range(_mask_Nx):
 
             # Calculate the relative position in x.
             # NOTE!!! Use round to solve the precision issue!
-            nxPitchesBefore = floor(round((x - xStartHole)/_pitch_x,9))
-            xRel = x - (xStartHole + nxPitchesBefore*_pitch_x)
+                nxPitchesBefore = floor(round((x - xStartHole)/_pitch_x,9))
+                xRel = x - (xStartHole + nxPitchesBefore*_pitch_x)
 
             # Make a rough judgement (J2) if this column is inside the hole according to xRel.
             #insideHoleX = True
             # NOTE!!! Use round to solve the precision issue!
             #if (round(xRel-_hole_dim1,9) >= 0): insideHoleX = False
-            insideHole = True
-            if ((xRel-_pitch_x/2)**2+(yRel-_pitch_y/2)**2>=_hole_dim1**2): insideHole=False
-            # Give values to OpT.arTr
-            # Make final judgement, based on J1, J2, J3.
-            #if ((insideHoleX and insideHoleY) or ((not insideHoleX) and (not insideHoleY))):
-            if(insideHole):
-                opT.arTr[ofst] = 1      # amplitude transmission.
-                opT.arTr[ofst + 1] = 0  # optical path difference.
-            else:
-                #opT.arTr[ofst] = exp(-0.5*_thick/_atten_len)    # amplitude transmission.
-                opT.arTr[ofst] =0
-                opT.arTr[ofst + 1] = -_delta*_thick             # optical path difference.
+                insideHole = True
+                if ((xRel-_pitch_x/2)**2+(yRel-_pitch_y/2)**2>=_hole_dim1**2): insideHole=False
+                # Give values to OpT.arTr
+                # Make final judgement, based on J1, J2, J3.
+                #if ((insideHoleX and insideHoleY) or ((not insideHoleX) and (not insideHoleY))):
+                if(insideHole):
+                    opT.arTr[ofst] = 1      # amplitude transmission.
+                    opT.arTr[ofst + 1] = 0  # optical path difference.
+                else:
+                    #opT.arTr[ofst] = exp(-0.5*_thick/_atten_len)    # amplitude transmission.
+                    opT.arTr[ofst] =0
+                    opT.arTr[ofst + 1] = 0            # optical path difference.
 
-            # Shift the pointer by 2.
-            ofst += 2
-            # Step x by hx.
-            x += hx
+                # Shift the pointer by 2.
+                ofst += 2
+                # Step x by hx.
+                x += hx
+        if(_hole_sh==3):
+        # Make a rough judgement (J1) if this row is inside the hole according to yRel.
+        #insideHoleY = True
+        # NOTE!!! Use round to solve the precision issue!
+        #if (round(yRel-_hole_dim2,9) >= 0): insideHoleY = False
+            x = -0.5*MaskRx # Mask is always centered on the grid, however grid can be shifted.
+            for ix in range(_mask_Nx):
+
+            # Calculate the relative position in x.
+            # NOTE!!! Use round to solve the precision issue!
+                nxPitchesBefore = floor(round((x - xStartHole)/_pitch_x,9))
+                xRel = x - (xStartHole + nxPitchesBefore*_pitch_x)
+
+            # Make a rough judgement (J2) if this column is inside the hole according to xRel.
+            #insideHoleX = True
+            # NOTE!!! Use round to solve the precision issue!
+            #if (round(xRel-_hole_dim1,9) >= 0): insideHoleX = False
+                insideHole = False
+                #if (abs(xRel-_pitch_x/2)<(_hole_dim1/(2**0.5)) and abs(yRel-_pitch_y/2)<(_hole_dim1/(2**0.5))):
+                xCross1=_pitch_x/2-_hole_dim1/(2**0.5)*math.cos(_angle)
+                yCross1=_pitch_y/2-_hole_dim1/(2**0.5)*math.sin(_angle)
+                xCross2=_pitch_x/2+_hole_dim1/(2**0.5)*math.cos(_angle)
+                yCross2=_pitch_y/2+_hole_dim1/(2**0.5)*math.sin(_angle)
+                k1=math.tan(math.pi/4+_angle)
+                k2=-math.tan(math.pi/4-_angle)
+                k4=math.tan(math.pi/4+_angle)
+                k3=-math.tan(math.pi/4-_angle)
+                #print("k1: ",k1," k2: ",k2," k3: ",k3," k4: ",k4)
+               
+                if(yRel<(k1*xRel+(yCross1-k1*xCross1)) and yRel<(k2*xRel+(yCross2-k2*xCross2)) and yRel>(k3*xRel+(yCross1-k3*xCross1)) and yRel>(k4*xRel+(yCross2-k4*xCross2))):
+                    insideHole=True
+                # Give values to OpT.arTr
+                # Make final judgement, based on J1, J2, J3.
+                #if ((insideHoleX and insideHoleY) or ((not insideHoleX) and (not insideHoleY))):
+                if(insideHole):
+                    opT.arTr[ofst] = 1      # amplitude transmission.
+                    opT.arTr[ofst + 1] = 0  # optical path difference.
+                else:
+                    #opT.arTr[ofst] = exp(-0.5*_thick/_atten_len)    # amplitude transmission.
+                    opT.arTr[ofst] =0
+                    opT.arTr[ofst + 1] = 0            # optical path difference.
+
+                # Shift the pointer by 2.
+                ofst += 2
+                # Step x by hx.
+                x += hx
         # Step y by hy.
         y += hy
     

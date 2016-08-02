@@ -12,6 +12,7 @@ from metro_mask import *
 import os
 import random
 import copy
+import math
 
 print('SRWLIB Python Example on Metrology:')
 # ********************** Setting input and output folders and files: **********************
@@ -130,10 +131,10 @@ pitch_x = holeSize*4
 pitch_y = holeSize*4
 maskNx = intNx
 maskNy = intNy
-numHoles = 32
-
+numHoles = 3
+holeAngle=math.pi/4
 # Generate a 2D Mask.
-opMask = srwl_opt_setup_mask(_delta=delta, _atten_len=attenLen, _thick=thickness, _hole_sh=2, _hole_dim1=holeSize, _hole_dim2=holeSize, _pitch_x=pitch_x, _pitch_y=pitch_y, _hole_nx=numHoles, _hole_ny=numHoles,_mask_Nx=maskNx,_mask_Ny=maskNy)
+opMask = srwl_opt_setup_mask(_delta=delta, _atten_len=attenLen, _thick=thickness, _hole_sh=1, _hole_dim1=holeSize, _hole_dim2=holeSize, _pitch_x=pitch_x, _pitch_y=pitch_y, _hole_nx=numHoles, _hole_ny=numHoles,_mask_Nx=maskNx,_mask_Ny=maskNy,_angle=holeAngle)
 print('Done!')
 
 # Extracting transmission data characteristic for subsequent plotting.
