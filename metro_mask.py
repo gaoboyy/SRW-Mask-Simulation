@@ -31,6 +31,7 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick, _hole_sh, _hole_dim1, _hole_
     :param _mask_Nx: number of pixels in x-direction  #?
     :param _mask_Ny: number of pixels in y-direction
     :param _hole_tilt: tilt angle of the mask(or the hole(?)) [rad or degree(?)]
+    :param _angle
     :return: transmission (SRWLOptT) type optical element which simulates the PMA
     """
 
