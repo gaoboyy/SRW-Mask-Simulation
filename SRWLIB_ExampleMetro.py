@@ -133,7 +133,7 @@ numGrids = 9  # [1]
 gridAngle = math.pi / 180 * 25  # [rad]
 hx = 1.e-06  # [m]
 hy = 1.e-06  # [m]
-grid_sh = 0    #grid shape 0. circle hartamann 1. rectangle hartamann 2. 2D grating
+grid_sh = 2  # grid shape 0: circle hartmann, 1: rectangle hartmann, 2: 2D grating
 # Generate a 2D Mask.
 start=time.clock()
 opMask = srwl_opt_setup_mask(_delta=delta, _atten_len=attenLen, _thick=thickness, _grid_sh=grid_sh, _grid_dx=gridSize,

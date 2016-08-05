@@ -43,7 +43,7 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
     if _grid_dy == 0:
         _grid_dy = _grid_dx  # An ellipse becomes a circle and a rectangle becomes a square.      
     if _grid_sh == 2:
-        _grid_dx = _pitch_x  #Change grid_size for 2D grating, grid_size eauql to pitch
+        _grid_dx = _pitch_x  # Change grid_size for 2D grating, grid_size equals to pitch
         _grid_dy = _pitch_y
     # Calculate the range of mask.
     mask_Rx = _hx * _mask_Nx  # mask range in x-direction [m].
@@ -63,7 +63,6 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
     pointer = 0  # pointer for array trans_opt.arTr
 
     y = - mask_Ry / 2  # Mask is always centered on the grid, however grid can be shifted.
-
     for iy in range(_mask_Ny):
 
         # Calculate the relative position in y.
@@ -86,10 +85,10 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
 
             # Initialize the bool parameter.
             inside_hole = False
+            phase_shift = False
 
             # Hartmann hole in an elliptical shape.
             if _grid_sh == 0:
-
                 if (x_rel / _grid_dx) ** 2 + (y_rel/ _grid_dy) ** 2 < 1 \
                         and not (round(x_rel - x, 9) == 0 and round(y_rel - y, 9) == 0) \
                         and abs(x) < grid_Rx / 2 and abs(y) < grid_Ry / 2:
@@ -97,7 +96,6 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
 
             # Hartmann hole in a rectangular shape.
             elif _grid_sh == 1:
-
                 # Calculate the equations for edges of rectangle.
                 xCross1 = - _grid_dx / (2 ** 0.5) * math.cos(_grid_angle)
                 yCross1 = - _grid_dx / (2 ** 0.5) * math.sin(_grid_angle)
@@ -116,10 +114,8 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
 
             # Grating shearing interferometry in a 2D phase grating.
             elif _grid_sh == 2:               
-                phase_shift = False
-                if ((x_rel>=0 and y_rel<0) or (x_rel<0 and y_rel>=0) ):
+                if (x_rel >= 0 > y_rel) or (x_rel < 0 <= y_rel):
                     phase_shift = True
-                
 
             else:
                 print('''Unknown shape code.''')  # (!)
