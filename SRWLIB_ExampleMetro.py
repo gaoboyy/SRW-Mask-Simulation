@@ -13,6 +13,7 @@ import os
 import random
 import copy
 import math
+import time
 
 print('SRWLIB Python Example on Metrology:')
 # ********************** Setting input and output folders and files: **********************
@@ -123,20 +124,24 @@ print('The wavelength =', wavelength, 'm')
 thickness = wavelength / (2 * delta)
 print('The thickness =', thickness, 'm')
 
-gridSize = 32.e-06 / 2  # [m]
-pitch_x = gridSize * 4
-pitch_y = gridSize * 4
+gridSize = 32.e-06  # [m]
+pitch_x = gridSize * 3
+pitch_y = gridSize * 3
 maskNx = intNx  # [1]
 maskNy = intNy  # [1]
 numGrids = 9  # [1]
 gridAngle = math.pi / 180 * 25  # [rad]
 hx = 1.e-06  # [m]
 hy = 1.e-06  # [m]
+grid_sh = 0    #grid shape 0. circle hartamann 1. rectangle hartamann 2. 2D grating
 # Generate a 2D Mask.
-opMask = srwl_opt_setup_mask(_delta=delta, _atten_len=attenLen, _thick=thickness, _grid_sh=1, _grid_dx=gridSize,
+start=time.clock()
+opMask = srwl_opt_setup_mask(_delta=delta, _atten_len=attenLen, _thick=thickness, _grid_sh=grid_sh, _grid_dx=gridSize,
                              _grid_dy=gridSize, _pitch_x=pitch_x, _pitch_y=pitch_y, _grid_nx=numGrids,
                              _grid_ny=numGrids, _mask_Nx=maskNx, _mask_Ny=maskNy, _grid_angle=gridAngle,
                              _hx=hx, _hy=hy)
+end=time.clock()
+print('setup mask cost: ',end-start,"s")
 print('Done!')
 
 # Extracting transmission data characteristic for subsequent plotting.
