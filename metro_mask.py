@@ -42,7 +42,9 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
     # Check if _grid_dy is set by user.
     if _grid_dy == 0:
         _grid_dy = _grid_dx  # An ellipse becomes a circle and a rectangle becomes a square.      
-
+    if _grid_sh == 2:
+        _grid_dx = _pitch_x  #Change grid_size for 2D grating, grid_size eauql to pitch
+        _grid_dy = _pitch_y
     # Calculate the range of mask.
     mask_Rx = _hx * _mask_Nx  # mask range in x-direction [m].
     mask_Ry = _hy * _mask_Nx  # mask range in y-direction [m].
@@ -68,9 +70,9 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
         # NOTE: Use round to solve the precision issue!
         pitch_num_y = floor(round(y / _pitch_y, 9))
         y_rel = y - (pitch_num_y * _pitch_y)
-        if y_rel > _pitch_y / 2:
+        if y_rel >= _pitch_y / 2: 
             y_rel -= _pitch_y
-
+            
         x = - mask_Rx / 2  # Mask is always centered on the grid, however grid can be shifted.
         for ix in range(_mask_Nx):
 
@@ -79,7 +81,7 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
             pitch_num_x = floor(round(x / _pitch_x, 9))
             x_rel = x - (pitch_num_x * _pitch_x)
 
-            if x_rel > _pitch_x / 2:
+            if x_rel >= _pitch_x / 2:
                 x_rel -= _pitch_x
 
             # Initialize the bool parameter.
@@ -88,7 +90,7 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
             # Hartmann hole in an elliptical shape.
             if _grid_sh == 0:
 
-                if (x_rel / _grid_dx) ** 2 + (y_rel / _grid_dy) ** 2 < 1 \
+                if (x_rel / _grid_dx) ** 2 + (y_rel/ _grid_dy) ** 2 < 1 \
                         and not (round(x_rel - x, 9) == 0 and round(y_rel - y, 9) == 0) \
                         and abs(x) < grid_Rx / 2 and abs(y) < grid_Ry / 2:
                     inside_hole = True
@@ -113,20 +115,36 @@ def srwl_opt_setup_mask(_delta, _atten_len, _thick,
                     inside_hole = True
 
             # Grating shearing interferometry in a 2D phase grating.
-            elif _grid_sh == 2:
-                print('''_grid_sh == 2 has not been completed yet.''')  # (!) not completed yet
+            elif _grid_sh == 2:               
+                phase_shift = False
+                if ((x_rel>=0 and y_rel<0) or (x_rel<0 and y_rel>=0) ):
+                    phase_shift = True
+                
 
             else:
                 print('''Unknown shape code.''')  # (!)
 
             # Give values to trans_opt.arTr.
-            if inside_hole:
+            if inside_hole  and not(_grid_sh == 2):
                 trans_opt.arTr[pointer] = 1      # amplitude transmission.  (!) not in physics yet
                 trans_opt.arTr[pointer + 1] = 0  # optical path difference. (!) not in physics yet
             else:
                 trans_opt.arTr[pointer] = 0      # amplitude transmission.  (!) not in physics yet
                 trans_opt.arTr[pointer + 1] = 0  # optical path difference. (!) not in physics yet
-
+                
+            if _grid_sh == 2:
+                # Give values to OpT.arTr
+                # Make final judgement.
+                if (phase_shift):                
+                    trans_opt.arTr[pointer] = exp(-0.5*_thick/_atten_len)    # amplitude transmission.                    
+                    trans_opt.arTr[pointer + 1] = -_delta*_thick             # optical path difference.
+                else:                   
+                    trans_opt.arTr[pointer] = 1      # amplitude transmission.
+                    trans_opt.arTr[pointer + 1] = 0  # optical path difference.
+                if not(abs(x) < grid_Rx / 2 and abs(y) < grid_Ry / 2) : # check if it is in grid area
+                    trans_opt.arTr[pointer] = 0
+                    trans_opt.arTr[pointer+1] = 0   
+                
             # Shift the pointer by 2.
             pointer += 2
 
